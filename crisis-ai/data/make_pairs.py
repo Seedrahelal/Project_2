@@ -70,14 +70,14 @@ def group_pairs(reports):
 
 
 # ---------- سيناريوهات الالتباس المتعمد ----------
-def scenarios():
+def scenarios(scale=1.0):
     all_pairs, counts = [], {}
 
     def add(name, prs):
         all_pairs.extend((f, l, name) for f, l in prs)
         counts[name] = counts.get(name, 0) + len(prs)
 
-    for k in range(70):   # 1) جيران طبيون متلاصقون
+    for k in range(int(70 * scale)):   # 1) جيران طبيون متلاصقون
         lat, lng = 33.51 + random.uniform(0, .02), 36.27 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 300))
         g = [mk(f"A{k}", lat + i * random.uniform(3, 30) * M, lng, 
@@ -89,7 +89,7 @@ def scenarios():
             r["incident_id"] = f"A{k}-{i}"
         add("جيران طبيون", group_pairs(g))
 
-    for k in range(60):   # 2) حريق + طبي مستقل جنبه
+    for k in range(int(60 * scale)):   # 2) حريق + طبي مستقل جنبه
         lat, lng = 33.52 + random.uniform(0, .02), 36.28 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 300))
         d = random.uniform(150, 350) * M
@@ -103,7 +103,7 @@ def scenarios():
                     "medical", "at_home"))
         add("حريق+طبي مستقلان", group_pairs(g))
 
-    for k in range(50):   # 3) انفجار مركب: أنواع مترابطة = نفس الحادث
+    for k in range(int(50 * scale)):   # 3) انفجار مركب: أنواع مترابطة = نفس الحادث
         lat, lng = 33.50 + random.uniform(0, .02), 36.30 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 300))
         types = ["fire", "medical", "collapse", "fire", "rescue"]
@@ -115,7 +115,7 @@ def scenarios():
                 for _ in range(random.randint(3, 5))]
         add("انفجار مركب", group_pairs(g))
 
-    for k in range(60):   # 4) نفس المكان بفارق 15-40 دقيقة
+    for k in range(int(60 * scale)):   # 4) نفس المكان بفارق 15-40 دقيقة
         lat, lng = 33.53 + random.uniform(0, .02), 36.26 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 200))
         gap = timedelta(minutes=random.uniform(15, 40))
@@ -127,7 +127,7 @@ def scenarios():
                     "fire") for _ in range(2)]
         add("نفس المكان بفاصل زمني", group_pairs(g))
 
-    for k in range(60):   # 5) مبلغ متأخر عن نفس الحادث (موجب صعب)
+    for k in range(int(60 * scale)):   # 5) مبلغ متأخر عن نفس الحادث (موجب صعب)
         lat, lng = 33.49 + random.uniform(0, .02), 36.29 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 200))
         g = [mk(f"L{k}", lat + random.uniform(-50, 50) * M, lng,
@@ -138,7 +138,7 @@ def scenarios():
                     "fire", "seeing_it"))
         add("مبلغ متأخر", group_pairs(g))
 
-    for k in range(50):   # 6) حريقان بنفس الحي بنفس الساعة (وضع أزمة)
+    for k in range(int(50 * scale)):   # 6) حريقان بنفس الحي بنفس الساعة (وضع أزمة)
         lat, lng = 33.54 + random.uniform(0, .02), 36.31 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 120))
         d = random.uniform(250, 600) * M
@@ -150,7 +150,7 @@ def scenarios():
                 for _ in range(2)]
         add("حريقان متجاوران", group_pairs(g))
 
-    for k in range(50):   # 7) حادثا سير متتاليان بنفس الطريق
+    for k in range(int(50 * scale)):   # 7) حادثا سير متتاليان بنفس الطريق
         lat, lng = 33.48 + random.uniform(0, .02), 36.25 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 200))
         d = random.uniform(80, 250) * M
@@ -161,7 +161,7 @@ def scenarios():
                 "road", "seeing_it")]
         add("سلسلة حوادث سير", group_pairs(g))
 
-    for k in range(50):   # 8) تشتت GPS واسع - نفس الحادث (موجب صعب)
+    for k in range(int(50 * scale)):   # 8) تشتت GPS واسع - نفس الحادث (موجب صعب)
         lat, lng = 33.55 + random.uniform(0, .02), 36.27 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 200))
         g = [mk(f"W{k}", lat + random.uniform(-350, 350) * M,
@@ -171,7 +171,7 @@ def scenarios():
             for _ in range(random.randint(4, 6))]
         add("تشتت واسع", group_pairs(g))
 
-    for k in range(40):   # 9) مشاهدون من بعيد بمراس ضعيفة - نفس الحادث
+    for k in range(int(40 * scale)):   # 9) مشاهدون من بعيد بمراس ضعيفة - نفس الحادث
         lat, lng = 33.52 + random.uniform(0, .02), 36.24 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 200))
         g = [mk(f"D{k}", lat, lng, t0, "fire", "at_home")]
@@ -182,7 +182,7 @@ def scenarios():
                 for _ in range(random.randint(2, 3))]
         add("مشاهدون بعيدون", group_pairs(g))
 
-    for k in range(40):   # 10) نفس المستخدم - حادثان مختلفان
+    for k in range(int(40 * scale)):   # 10) نفس المستخدم - حادثان مختلفان
         lat, lng = 33.50 + random.uniform(0, .02), 36.26 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 200))
         u = f"SC-U{k:04d}"
@@ -192,7 +192,7 @@ def scenarios():
                 "medical", "seeing_it", user=u)]
         add("نفس المستخدم حادثان", group_pairs(g))
 
-    for k in range(35):   # 11) كاذب انتهازي ملاصق لحادث حقيقي
+    for k in range(int(35 * scale)):   # 11) كاذب انتهازي ملاصق لحادث حقيقي
         lat, lng = 33.51 + random.uniform(0, .02), 36.32 + random.uniform(0, .02)
         t0 = BASE + timedelta(minutes=random.randint(0, 200))
         g = [mk(f"OP{k}", lat + random.uniform(-40, 40) * M, lng,
@@ -243,7 +243,8 @@ def organic_pairs():
 
 
 org = organic_pairs()
-sc, counts = scenarios()
+target_scale = max(1.0, (len(org) * 0.45) / 2500)
+sc, counts = scenarios(scale=target_scale)
 pairs = org + sc
 random.shuffle(pairs)
 

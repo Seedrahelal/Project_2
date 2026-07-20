@@ -24,7 +24,7 @@ OUT_REPORTS = os.path.join(PROJECT, "dataset", "sim_reports.csv")
 OUT_INCIDENTS = os.path.join(PROJECT, "dataset", "sim_incidents.csv")
 
 random.seed(2026)
-N_INCIDENTS = 600          # عدد الحوادث الحقيقية المولدة
+N_INCIDENTS = 1500           # عدد الحوادث الحقيقية المولدة
 FAKE_RATE = 0.10           # NFPA/USFA: الكاذب 9-12% من الحجم الكلي
 SEVERITIES = ["low", "medium", "high", "critical"]
 
@@ -182,6 +182,7 @@ for inc in incidents:
             "submission_method": sub,
             "user_id": u, "user_true_report_ratio": users[u],
             "true_severity": inc["actual_severity"],
+            "fake_style": "",
         })
         rid += 1
         # ذعر واقعي: 6% يعيد الإرسال (يختبر إسقاط التكرار لاحقاً)
@@ -197,13 +198,32 @@ for inc in incidents:
 # مستخدمون بسجل ضعيف، SOS بلا تفاصيل، بلا وسائط، مواقع عشوائية
 n_fake = int(FAKE_RATE * len(reports) / (1 - FAKE_RATE))
 for _ in range(n_fake):
-    u = random.choice(list(fakers)) if random.random() < .8 \
-        else random.choice(list(users))
-    ratio = fakers.get(u, users.get(u))
+    # 40% كاذب ذكي يقلد الحقيقي - 60% كلاسيكي بأنماط NFPA
+    smart = random.random() < 0.4
+    if smart:
+        u = random.choice(list(users))          # سجل نظيف!
+        ratio = users[u]
+        sev = pick_weighted(SEVERITIES, [.10, .40, .40, .10])
+        sub = pick_weighted(["full_form", "sos", "voice"],
+                            [.50, .30, .20])
+        media = random.random() < .15
+        anchor = pick_weighted(["at_home", "seeing_it", "unknown"], [.25, .55, .20])
+        injured = None if random.random() < .3 \
+            else random.randint(1, 6)
+    else:
+        u = random.choice(list(fakers)) if random.random() < .8 \
+            else random.choice(list(users))
+        ratio = fakers.get(u, users.get(u))
+        sev = pick_weighted(SEVERITIES, [.05, .15, .30, .50])
+        sub = pick_weighted(["full_form", "sos", "voice"],
+                            [.25, .55, .20])
+        media = random.random() < .05
+        anchor = pick_weighted(["at_home", "seeing_it", "unknown"], [.2, .3, .5])
+        injured = None if random.random() < .6 \
+            else random.randint(5, 30)
     itype = pick_weighted(["fire", "medical", "police", "road"], [.4, .3, .2, .1])
     ts = sample_timestamp()
     zone, zlat, zlng, zr = random.choice(ZONES)
-    injured = None if random.random() < .6 else random.randint(5, 30)
     reports.append({
         "report_id": f"RPT-{rid:05d}",
         "incident_id": "", "is_fake": 1,
@@ -212,16 +232,16 @@ for _ in range(n_fake):
         "gps_accuracy": round(random.uniform(5, 50), 1),
         "timestamp": ts,
         "incident_type": itype,
-        "citizen_severity": pick_weighted(SEVERITIES, [.05, .15, .30, .50]),
-        "incident_anchor": pick_weighted(["at_home", "seeing_it", "unknown"], [.2, .3, .5]),
+        "citizen_severity": sev,
+        "incident_anchor": anchor,
         "injured_count": injured,
         "injured_unknown": injured is None,
         "is_witness": random.random() < .05,
-        "has_media": random.random() < .05,
-        "submission_method": pick_weighted(
-            ["full_form", "sos", "voice"], [.25, .55, .20]),
+        "has_media": media,
+        "submission_method": sub,
         "user_id": u, "user_true_report_ratio": ratio,
         "true_severity": "",
+        "fake_style": "smart" if smart else "classic",
     })
     rid += 1
 
